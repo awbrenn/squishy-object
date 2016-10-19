@@ -12,6 +12,6 @@ find_library(GLUT "glut")
 find_library(GL "GL")
 find_library(GLU "GLU")
 
-set(SOURCE_FILES main.cpp Utility.cpp Camera.cpp Matrix.cpp Vector.cpp Mesh.cpp Mesh.h)
+set(SOURCE_FILES main.cpp Utility.cpp Camera.cpp Matrix.cpp Vector.cpp Mesh.cpp Mesh.h Object.cpp Object.h Strut.cpp Strut.h Face.cpp Face.h VertexParticle.cpp VertexParticle.h Shader.cpp Shader.h)
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} ${GLUT} ${GL} ${GLU} ${OIIO})
+target_link_libraries(${PROJECT_NAME} ${GLUT} ${GL} ${GLU} ${OIIO} )

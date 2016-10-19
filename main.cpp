@@ -6,8 +6,11 @@
 // Created by Austin Brennan on 9/12/16
 // See readme.md for more details
 //
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
+
 #include "Camera.h"
-#include "Mesh.h"
+#include "Object.h"
 
 #ifdef __APPLE__
 #  pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -20,6 +23,7 @@ int WIDTH = 1280;
 int HEIGHT = 720;
 
 Camera *camera;
+Object *object;
 
 bool showReferenceGrid = true;
 
@@ -99,6 +103,19 @@ void initCameraRender() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+void drawMesh() {
+  glUseProgram(object->shader->program);
+  glBegin(GL_TRIANGLES);
+  for (int i = 0; i < object->mesh.GLfaces.size(); ++i) {
+    GLface face = object->mesh.GLfaces[i];
+    for (int j = 0; j < 3; ++j) {
+      glNormal3fv((GLfloat*)&face.vn[j]);
+      glVertex3fv((GLfloat*)&face.v[j]);
+    }
+  }
+  glEnd();
+}
+
 void perspDisplay() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -110,6 +127,8 @@ void perspDisplay() {
 
   if (showReferenceGrid)
     drawReferenceGrid();
+
+  drawMesh();
 
   glFlush();
   glutSwapBuffers();
@@ -177,7 +196,60 @@ void keyboardEventHandler(unsigned char key, int x, int y) {
   glutPostRedisplay();
 }
 
+bool readParameters(char *paramfile_name) {
+  bool succeeded = true;
+  std::ifstream paramfile_stream(paramfile_name);
+  std::string line;
+
+  if (paramfile_stream.is_open()) {
+    // read through the file
+    while (getline(paramfile_stream, line)) {
+      std::stringstream line_stream(line);
+      std::string type;
+      line_stream >> type;
+
+      if (type.compare("OBJECT:") == 0) {
+        std::string obj_filename;
+        std::string frag_shader_filename;
+        std::string vert_shader_filename;
+        // skip a line
+        getline(paramfile_stream, line);
+
+        // stream the line with object information
+        getline(paramfile_stream, line);
+        std::stringstream object_stream(line);
+
+        object_stream >> obj_filename;
+
+        // skip a few lines
+        getline(paramfile_stream, line);
+        getline(paramfile_stream, line);
+        getline(paramfile_stream, line);
+
+        object_stream.str(line);
+        object_stream.clear();
+
+        object_stream >> frag_shader_filename >> vert_shader_filename;
+
+        object = new Object(obj_filename, frag_shader_filename, vert_shader_filename);
+      }
+    }
+  }
+  else {
+    succeeded = false;
+  }
+
+  return succeeded;
+}
+
 int main(int argc, char *argv[]) {
+  if (argc != 2) {
+    std::cerr << "Proper Usage: $> SquishyMesh parameters" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  readParameters(argv[1]);
+
   // set up opengl window
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
@@ -194,9 +266,6 @@ int main(int argc, char *argv[]) {
   glutMouseFunc(mouseEventHandler);
   glutMotionFunc(motionEventHandler);
   glutKeyboardFunc(keyboardEventHandler);
-
-  Mesh mesh = Mesh();
-  mesh.loadObj((char *) "hello");
 
   glutMainLoop();
   return(0);
