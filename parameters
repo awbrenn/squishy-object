@@ -1,6 +1,9 @@
 OBJECT:
         obj path and filename
-        /home/awbrenn/Documents/workspace/physanim/4/box.obj
+        /home/awbrenn/Documents/workspace/physanim/4/plane.obj
 
-        fragment shader     vertex shader
+        fragment shader                                                 vertex shader
         /home/awbrenn/Documents/workspace/physanim/4/shader.frag       /home/awbrenn/Documents/workspace/physanim/4/shader.vert
+
+SOLVER:
+        spring constant (k), damping constant (d), mass of spring (m)

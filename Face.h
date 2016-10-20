@@ -5,13 +5,11 @@
 #ifndef SQUISHYMESH_FACE_H
 #define SQUISHYMESH_FACE_H
 
-struct StrutIndexAngle {
-  unsigned int index; // index of the strut
-  double angle; // vertex angle of the strut
-};
-
 class Face {
-  StrutIndexAngle s[3]; // indices and vertex angles of struts
+  public:
+    unsigned int strut_indices[3]; // indices of struts
+
+    Face(unsigned int strut_index1, unsigned int strut_index2, unsigned int strut_index3);
 };
 
 

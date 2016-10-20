@@ -34,13 +34,16 @@ typedef struct GLface {
   GLuv uv[3]; // uv coordinate
 } GLface;
 
-class Mesh {
-  private:
-    std::vector<unsigned int> vertex_indices;
-    std::vector<unsigned int> uv_indices;
-    std::vector<unsigned int> normal_indices;
+typedef struct FaceIndices {
+  unsigned int v0;
+  unsigned int v1;
+  unsigned int v2;
+} FaceIndices;
 
+class Mesh {
   public:
+    std::vector<GLvertex> vertices;
+    std::vector<FaceIndices> face_indices;
     unsigned int number_of_faces = 0;
     std::vector<GLface> GLfaces;
 

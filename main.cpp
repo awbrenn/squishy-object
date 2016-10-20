@@ -10,6 +10,7 @@
 
 #include "Camera.h"
 #include "Object.h"
+#include "SpringyObject.h"
 
 #ifdef __APPLE__
   #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -24,12 +25,13 @@ int WIDTH = 1280;
 int HEIGHT = 720;
 
 Camera *camera;
-Object *object;
+SpringyObject *object;
 
 bool showReferenceGrid = true;
 
 // draws a simple grid
 void drawReferenceGrid() {
+  glUseProgram(0);
   glColor3f(0.0f, 0.0f, 0.0f);
 
   glLineWidth(1.0f);
@@ -106,6 +108,8 @@ void initCameraRender() {
 
 void drawMesh() {
   glUseProgram(object->shader->program);
+//  glPolygonMode(GL_FRONT, GL_LINE);
+//  glPolygonMode(GL_BACK, GL_LINE);
   glBegin(GL_TRIANGLES);
   for (int i = 0; i < object->mesh.GLfaces.size(); ++i) {
     GLface face = object->mesh.GLfaces[i];
@@ -115,6 +119,8 @@ void drawMesh() {
     }
   }
   glEnd();
+//  glPolygonMode(GL_FRONT, GL_FILL);
+//  glPolygonMode(GL_BACK, GL_FILL);
 }
 
 void perspDisplay() {
@@ -122,7 +128,6 @@ void perspDisplay() {
 
   // draw the camera created in perspective
   camera->PerspectiveDisplay(WIDTH, HEIGHT);
-
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
@@ -232,7 +237,7 @@ bool readParameters(char *paramfile_name) {
 
         object_stream >> frag_shader_filename >> vert_shader_filename;
 
-        object = new Object(obj_filename, frag_shader_filename, vert_shader_filename);
+        object = new SpringyObject(obj_filename, frag_shader_filename, vert_shader_filename);
       }
     }
   }

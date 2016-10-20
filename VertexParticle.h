@@ -8,10 +8,14 @@
 #include "Vector.h"
 
 class VertexParticle {
-  double mass;
-  Vector3d pos; // position of vertex particle
-  Vector3d vel; // velocity of vertex particle
-  Vector3d force; // force acting on vertex particle
+  public:
+    double mass;
+    Vector3d pos; // position of vertex particle
+    Vector3d vel; // velocity of vertex particle
+    Vector3d force; // force acting on vertex particle
+
+  public:
+    VertexParticle(Vector3d pos, Vector3d vel);
 };
 
 

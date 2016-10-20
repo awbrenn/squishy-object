@@ -5,29 +5,23 @@
 
 #include "Shader.h"
 
-Shader::Shader(char *vert, char *frag) {
-  program = loadShaders(vert, frag);
+Shader::Shader(char *frag, char *vert) {
+  program = loadShaders(frag, vert);
 }
 
 char* Shader::readShaderProgram(char *filename) {
-  std::string contents;
-  std::ifstream in(filename, std::ios::in | std::ios::binary);
-
-  std::cout << filename << std::endl;
-
-  if (in) {
-    in.seekg(0, std::ios::end);
-    contents.reserve((unsigned long) in.tellg());
-    in.seekg(0, std::ios::beg);
-    contents.assign((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-    in.close();
-  }
-  else {
-    std::cerr << "Could not read shader" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
-  return (char *) contents.c_str();
+  FILE *fp;
+  char *content = NULL;
+  int fd, count;
+  fd = open(filename,O_RDONLY);
+  count = lseek(fd,0,SEEK_END);
+  close(fd);
+  content = (char *)calloc(1,(count+1));
+  fp = fopen(filename,"r");
+  count = fread(content,sizeof(char),count,fp);
+  content[count] = '\0';
+  fclose(fp);
+  return content;
 }
 
 void Shader::setUniformParameter(unsigned int p, char* varName, unsigned int value) {
@@ -35,7 +29,7 @@ void Shader::setUniformParameter(unsigned int p, char* varName, unsigned int val
   glUniform1i(location, value);
 }
 
-unsigned int Shader::loadShaders(char* vert, char* frag) {
+unsigned int Shader::loadShaders(char* frag, char* vert) {
   char *vs, *fs;
   GLuint v, f, p;
 
@@ -48,19 +42,45 @@ unsigned int Shader::loadShaders(char* vert, char* frag) {
   glShaderSource(v,1,(const char **)&vs,NULL);
   glShaderSource(f,1,(const char **)&fs,NULL);
 
+  free(vs);
+  free(fs);
+
   glCompileShader(v);
   glCompileShader(f);
 
   p = glCreateProgram();
+  if (p == 0) {std::cerr << "Failed to create program" << std::endl; exit(EXIT_FAILURE);}
   glAttachShader(p,f);
   glAttachShader(p,v);
   glLinkProgram(p);
 
-  glUseProgram(p);
-  setUniformParameter(p, (char *) "myDiffuse", 0);
-  setUniformParameter(p, (char *) "myNormal", 1);
-  setUniformParameter(p, (char *) "mySpecular", 2);
-  setUniformParameter(p, (char *) "myShadow", 3);
+  // print out any erros with shaders
+  GLsizei lengthf;
+  GLchar infologf[10000];
+  glGetShaderInfoLog(f, 10000, &lengthf, infologf);
+  std::cout << "Frag shader compilation: " << lengthf << "\n" << infologf << std::endl;
+
+  GLsizei lengthv;
+  GLchar infologv[10000];
+  glGetShaderInfoLog(v, 10000, &lengthv, infologv);
+  std::cout << "Vert shader compilation: " << lengthv << "\n" << infologv << std::endl;
+
+  // print out errors with linking
+  GLint link_status;
+  glGetProgramiv(p, GL_LINK_STATUS, &link_status);
+  if (link_status == GL_FALSE) {
+      GLsizei length;
+      GLchar infolog[10000];
+      glGetProgramInfoLog(p, 10000, &length, infolog);
+      std::cout << "Failed to link program: " << length << "\n" << infolog << std::endl;
+      exit(EXIT_FAILURE);
+  }
+
+//  glUseProgram(p);
+//  setUniformParameter(p, (char *) "myDiffuse", 0);
+//  setUniformParameter(p, (char *) "myNormal", 1);
+//  setUniformParameter(p, (char *) "mySpecular", 2);
+//  setUniformParameter(p, (char *) "myShadow", 3);
 
   return p;
 }
