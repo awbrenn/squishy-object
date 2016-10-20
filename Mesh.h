@@ -10,7 +10,11 @@
 #include <sstream>
 #include <fstream>
 
-#include <GL/gl.h>
+#ifdef __APPLE__
+  #include <OpenGL/gl.h>   // OpenGL itself.
+#else
+  #include <GL/gl.h>   // OpenGL itself.
+#endif
 
 typedef struct GLvertex {
   GLfloat x, y, z;

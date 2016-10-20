@@ -10,18 +10,24 @@ Shader::Shader(char *vert, char *frag) {
 }
 
 char* Shader::readShaderProgram(char *filename) {
-  FILE *fp;
-  char *content = NULL;
-  int fd, count;
-  fd = open(filename,O_RDONLY);
-  count = (int)lseek(fd,0,SEEK_END);
-  close(fd);
-  content = (char *)calloc(1,(size_t)(count+1));
-  fp = fopen(filename,"r");
-  count = (int)fread(content,sizeof(char),(size_t)count,fp);
-  content[count] = '\0';
-  fclose(fp);
-  return content;
+  std::string contents;
+  std::ifstream in(filename, std::ios::in | std::ios::binary);
+
+  std::cout << filename << std::endl;
+
+  if (in) {
+    in.seekg(0, std::ios::end);
+    contents.reserve((unsigned long) in.tellg());
+    in.seekg(0, std::ios::beg);
+    contents.assign((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    in.close();
+  }
+  else {
+    std::cerr << "Could not read shader" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  return (char *) contents.c_str();
 }
 
 void Shader::setUniformParameter(unsigned int p, char* varName, unsigned int value) {
@@ -41,9 +47,6 @@ unsigned int Shader::loadShaders(char* vert, char* frag) {
 
   glShaderSource(v,1,(const char **)&vs,NULL);
   glShaderSource(f,1,(const char **)&fs,NULL);
-
-  free(vs);
-  free(fs);
 
   glCompileShader(v);
   glCompileShader(f);

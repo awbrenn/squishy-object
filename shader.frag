@@ -1,4 +1,4 @@
-varying vec3 ec_vnormal, ec_vposition;
+// varying vec3 ec_vnormal, ec_vposition;
 
 void main() {
 //  vec3 P, N, L, V, H, light_position;
@@ -19,5 +19,5 @@ void main() {
 //  specular_color *= (shininess+2.0)/(8.0*pi);
 
 //  gl_FragColor = 0.8 * (diffuse_color);
-    gl_FrageColor = vec4(1.0, 0.0, 0.0, 1.0);
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

@@ -7,16 +7,17 @@
 // See readme.md for more details
 //
 #define GL_GLEXT_PROTOTYPES 1
-#include <GL/gl.h>
 
 #include "Camera.h"
 #include "Object.h"
 
 #ifdef __APPLE__
-#  pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#  include <GLUT/glut.h>
+  #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  #include <GLUT/glut.h>
+  #include <OpenGL/gl.h>
 #else
   #include <GL/glut.h>
+  #include <GL/gl.h>
 #endif
 
 int WIDTH = 1280;
@@ -248,14 +249,15 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  readParameters(argv[1]);
-
   // set up opengl window
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
   glutInitWindowSize(WIDTH, HEIGHT);
   glutInitWindowPosition(50, 50);
   int persp_win = glutCreateWindow("Simulating A Squishy Mesh");
+
+  // read the parameters
+  readParameters(argv[1]);
 
   // initialize the camera and such
   initCameraDebug();

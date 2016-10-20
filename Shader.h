@@ -5,12 +5,18 @@
 #ifndef SQUISHYMESH_SHADER_H
 #define SQUISHYMESH_SHADER_H
 
-#include <GL/gl.h>
+#ifdef __APPLE__
+  #include <OpenGL/gl.h>   // OpenGL itself.
+#else
+  #include <GL/gl.h>   // OpenGL itself.
+#endif
 
 #include <stdio.h>
 #include <fcntl.h>
 #include <cstdlib>
 #include <unistd.h>
+#include <fstream>
+#include <iostream>
 
 class Shader {
   private:
