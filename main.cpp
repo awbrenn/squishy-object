@@ -11,6 +11,7 @@
 #include "Camera.h"
 #include "Object.h"
 #include "SpringyObject.h"
+#include "Solver.h"
 
 #ifdef __APPLE__
   #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -26,6 +27,7 @@ int HEIGHT = 720;
 
 Camera *camera;
 SpringyObject *springy_object;
+Solver *solver;
 
 bool showReferenceGrid = true;
 
@@ -140,7 +142,8 @@ void perspDisplay() {
   glutSwapBuffers();
 }
 
-void simulateParticles() {
+void stepSimulation() {
+  solver->update(RK4);
   glutPostRedisplay();
 }
 
@@ -247,7 +250,7 @@ bool readParameters(char *paramfile_name) {
 
         object_stream >> mass >> spring_constant >> damping_constant;
 
-        std::cout << "Tk: " << mass << " Td: " << spring_constant << " w: " << damping_constant << std::endl;
+//        std::cout << "mass: " << mass << " k: " << spring_constant << " d: " << damping_constant << std::endl;
 
         springy_object = new SpringyObject(obj_filename, frag_shader_filename, vert_shader_filename,
                                            mass, spring_constant, damping_constant);
@@ -265,7 +268,9 @@ bool readParameters(char *paramfile_name) {
         std::stringstream solver_stream(line);
         solver_stream >> time_step;
 
-        std::cout << time_step << std::endl;
+//        std::cout << time_step << std::endl;
+
+        solver = new Solver(&springy_object->spring_mesh, time_step);
       }
     }
   }
@@ -297,7 +302,7 @@ int main(int argc, char *argv[]) {
 
   // set up opengl callback functions
   glutDisplayFunc(perspDisplay);
-  glutIdleFunc(simulateParticles);
+  glutIdleFunc(stepSimulation);
   glutMouseFunc(mouseEventHandler);
   glutMotionFunc(motionEventHandler);
   glutKeyboardFunc(keyboardEventHandler);

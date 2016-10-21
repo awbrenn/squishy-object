@@ -8,11 +8,21 @@
 
 #include "SpringyMesh.h"
 
-class Solver {
-  SpringyMesh *spring_mesh;
-  double dt; // timestep (dt for delta time per step)
+#define EULER 0
+#define RK4 4
 
-  Solver (SpringyMesh *spring_mesh, double time_step);
+class Solver {
+  public:
+    SpringyMesh *spring_mesh;
+    double dt; // timestep (dt for delta time per step)
+
+    Solver (SpringyMesh *spring_mesh, double time_step);
+    void addExternalForces();
+    void addStrutForces();
+    void integrate(void (Solver::*integrator)());
+    void eulerIntegration();
+    void RK4Integration();
+    void update(unsigned int integrator);
 };
 
 
