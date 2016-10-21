@@ -18,9 +18,11 @@ bool SpringyMesh::strutDoesNotExist(unsigned int v1, unsigned int v2, unsigned i
   return does_not_exist;
 }
 
-void SpringyMesh::convertToSprings(Mesh mesh) {
+void SpringyMesh::convertToSprings(Mesh mesh, double mass) {
+  double even_mass = mass / ((double) (mesh.vertices.size()));
+
   for (auto v = mesh.vertices.begin(); v != mesh.vertices.end(); ++v) {
-    vparticles.push_back(VertexParticle(Vector3d(v->x, v->y, v->z), Vector3d(0.0, 0.0, 0.0)));
+    vparticles.push_back(VertexParticle(Vector3d(v->x, v->y, v->z), Vector3d(0.0, 0.0, 0.0), even_mass));
   }
 
   // add struts and faces
@@ -43,10 +45,30 @@ unsigned int SpringyMesh::addStrut(unsigned int v1, unsigned int v2, unsigned fa
     l0 = (vparticles[v1].pos - vparticles[v2].pos).norm();
     struts.push_back(Strut(1.0, 1.0, l0, v1, v2, face_index, 0));
     strut_index = (unsigned int) (struts.size() - 1); // index is the last strut in the list
+    struts[strut_index].f2 = UNASSIGNED; // set the face to unassigned
   }
   else {
-    struts[strut_index].f2 = face_index;
+    struts[strut_index].f2 = face_index; // if the strut exists already set the second face
   }
 
   return strut_index;
+}
+
+double SpringyMesh::calculateAverageStrutLength() {
+  double average_strut_length = 0;
+
+  for (auto s = struts.begin(); s != struts.end(); ++s) {
+    average_strut_length += (vparticles[s->v1].pos - vparticles[s->v2].pos).norm();
+  }
+
+  return average_strut_length / ((double) (struts.size()));
+}
+
+void SpringyMesh::calculateSpringConstants(double spring_constant, double damper_constant) {
+  double average_strut_length = calculateAverageStrutLength();
+
+  for (auto s = struts.begin(); s != struts.end(); ++s) {
+    s->k = (s->l0 / average_strut_length) * spring_constant;
+    s->d = (s->l0 / average_strut_length) * damper_constant;
+  }
 }

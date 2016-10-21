@@ -15,7 +15,7 @@ class VertexParticle {
     Vector3d force; // force acting on vertex particle
 
   public:
-    VertexParticle(Vector3d pos, Vector3d vel);
+    VertexParticle(Vector3d pos, Vector3d vel, double mass);
 };
 
 

@@ -1,9 +1,13 @@
-OBJECT:
+SPRINGY OBJECT:
         obj path and filename
         /home/awbrenn/Documents/workspace/physanim/4/plane.obj
 
         fragment shader                                                 vertex shader
         /home/awbrenn/Documents/workspace/physanim/4/shader.frag       /home/awbrenn/Documents/workspace/physanim/4/shader.vert
 
+        mass (m) [kg], spring constant (k) [N/m], damping constant (d) [(N*s)/m]
+                  1.0                        1.0                             1.0
+
 SOLVER:
-        spring constant (k), damping constant (d), mass of spring (m)
+    timestep (change in time between each simulation step)
+       0.002

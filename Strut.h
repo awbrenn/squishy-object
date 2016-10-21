@@ -14,10 +14,10 @@ class Strut {
     double l0; // original length of strut
     unsigned int v1; // index of first vertex
     unsigned int v2; // index of second vertex
-    unsigned int f1; // index of first face
-    unsigned int f2; // index of second face
+    int f1; // index of first face
+    int f2; // index of second face
 
-    Strut(double K, double D, double L0, unsigned int V1, unsigned int V2, unsigned int F1, unsigned int F2);
+    Strut(double K, double D, double L0, unsigned int V1, unsigned int V2, int F1, int F2);
 };
 
 

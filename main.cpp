@@ -25,7 +25,7 @@ int WIDTH = 1280;
 int HEIGHT = 720;
 
 Camera *camera;
-SpringyObject *object;
+SpringyObject *springy_object;
 
 bool showReferenceGrid = true;
 
@@ -107,12 +107,12 @@ void initCameraRender() {
 }
 
 void drawMesh() {
-  glUseProgram(object->shader->program);
+  glUseProgram(springy_object->shader->program);
 //  glPolygonMode(GL_FRONT, GL_LINE);
 //  glPolygonMode(GL_BACK, GL_LINE);
   glBegin(GL_TRIANGLES);
-  for (int i = 0; i < object->mesh.GLfaces.size(); ++i) {
-    GLface face = object->mesh.GLfaces[i];
+  for (int i = 0; i < springy_object->mesh.GLfaces.size(); ++i) {
+    GLface face = springy_object->mesh.GLfaces[i];
     for (int j = 0; j < 3; ++j) {
       glNormal3fv((GLfloat*)&face.vn[j]);
       glVertex3fv((GLfloat*)&face.v[j]);
@@ -210,11 +210,11 @@ bool readParameters(char *paramfile_name) {
   if (paramfile_stream.is_open()) {
     // read through the file
     while (getline(paramfile_stream, line)) {
-      std::stringstream line_stream(line);
-      std::string type;
-      line_stream >> type;
 
-      if (type.compare("OBJECT:") == 0) {
+      if (line.compare("SPRINGY OBJECT:") == 0) {
+        double mass, // spring time constant
+               spring_constant, // damper time constant
+                damping_constant; // natural frequency of spring
         std::string obj_filename;
         std::string frag_shader_filename;
         std::string vert_shader_filename;
@@ -237,7 +237,35 @@ bool readParameters(char *paramfile_name) {
 
         object_stream >> frag_shader_filename >> vert_shader_filename;
 
-        object = new SpringyObject(obj_filename, frag_shader_filename, vert_shader_filename);
+        // skip a line
+        getline(paramfile_stream, line);
+        getline(paramfile_stream, line);
+        getline(paramfile_stream, line);
+
+        object_stream.str(line);
+        object_stream.clear();
+
+        object_stream >> mass >> spring_constant >> damping_constant;
+
+        std::cout << "Tk: " << mass << " Td: " << spring_constant << " w: " << damping_constant << std::endl;
+
+        springy_object = new SpringyObject(obj_filename, frag_shader_filename, vert_shader_filename,
+                                           mass, spring_constant, damping_constant);
+
+        // skip a line
+        getline(paramfile_stream, line);
+      }
+
+      else if (line.compare("SOLVER:") == 0) {
+        double time_step;
+        // skip a line
+        getline(paramfile_stream, line);
+
+        getline(paramfile_stream, line);
+        std::stringstream solver_stream(line);
+        solver_stream >> time_step;
+
+        std::cout << time_step << std::endl;
       }
     }
   }

@@ -4,7 +4,7 @@
 
 #include "Strut.h"
 
-Strut::Strut(double K, double D, double L0, unsigned int V1, unsigned int V2, unsigned int F1, unsigned int F2) {
+Strut::Strut(double K, double D, double L0, unsigned int V1, unsigned int V2, int F1, int F2) {
   k = K;
   d = D;
   l0 = L0;

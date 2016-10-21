@@ -21,7 +21,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     find_library(GLU "GLU")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-set(SOURCE_FILES main.cpp Utility.cpp Camera.cpp Matrix.cpp Vector.cpp Mesh.cpp Mesh.h Object.cpp Object.h Strut.cpp Strut.h Face.cpp Face.h VertexParticle.cpp VertexParticle.h Shader.cpp Shader.h SpringyMesh.cpp SpringyMesh.h SpringyObject.cpp SpringyObject.h)
+set(SOURCE_FILES main.cpp Utility.cpp Camera.cpp Matrix.cpp Vector.cpp Mesh.cpp Mesh.h Object.cpp Object.h Strut.cpp Strut.h Face.cpp Face.h VertexParticle.cpp VertexParticle.h Shader.cpp Shader.h SpringyMesh.cpp SpringyMesh.h SpringyObject.cpp SpringyObject.h Solver.cpp Solver.h)
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
