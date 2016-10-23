@@ -29,6 +29,11 @@ class SpringyMesh {
 
     // checks if a strut already exists
     bool strutDoesNotExist(unsigned int v1, unsigned int v2, unsigned int *index);
+
+    // converts a spring mesh back to a render mesh
+    void convertToRenderMesh(Mesh* mesh);
+
+    std::vector<VertexParticle> getVerticesOfFace(std::vector<Face>::iterator face);
 };
 
 

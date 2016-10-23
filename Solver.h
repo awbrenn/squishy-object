@@ -22,7 +22,7 @@ class Solver {
     void integrate(void (Solver::*integrator)());
     void eulerIntegration();
     void RK4Integration();
-    void update(unsigned int integrator);
+    void update(unsigned int integrator, Mesh* render_mesh);
 };
 
 

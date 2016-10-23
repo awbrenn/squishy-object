@@ -143,7 +143,7 @@ void perspDisplay() {
 }
 
 void stepSimulation() {
-  solver->update(RK4);
+  solver->update(EULER, &springy_object->mesh);
   glutPostRedisplay();
 }
 
