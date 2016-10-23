@@ -10,4 +10,4 @@ SPRINGY OBJECT:
 
 SOLVER:
     timestep (change in time between each simulation step)
-       0.03
+        0.03

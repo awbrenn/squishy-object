@@ -36,16 +36,39 @@ void Solver::addStrutForces() {
   }
 }
 
+// TODO detect geometry collisions rather than ground plane
+bool Solver::detectCollision(double *time_step_fraction, std::vector::iterator vertex_particle) {
+  bool collision_occurred = false;
+
+  if (vertex_particle->pos.y < -2.0) {
+    collision_occurred = true;
+  }
+
+  return collision_occurred;
+}
+
+
 void Solver::eulerIntegration() {
   Vector3d acceleration;
+  double time_step_fraction;
 
   addExternalForces();
   addStrutForces();
 
+
   for (auto vp = spring_mesh->vparticles.begin(); vp < spring_mesh->vparticles.end() - 1; ++vp) {
     acceleration = vp->force / vp->mass;
-    vp->vel = vp->vel + acceleration * dt;
-    vp->pos = vp->pos + vp->vel * dt;
+
+    Vector3d new_vel = vp->vel + acceleration * dt;
+    Vector3d new_pos = vp->pos + vp->vel * dt;
+
+    if (detectCollision(&time_step_fraction, vp)) {
+
+    }
+    else {
+      vp->vel = new_vel;
+      vp->pos = new_pos;
+    }
   }
 }
 
@@ -70,7 +93,7 @@ void Solver::update(unsigned int integrator, Mesh* render_mesh) {
   spring_mesh->convertToRenderMesh(render_mesh);
 
 
-  // Debugging print for vertex normals
+//   Debugging print for vertex normals
 //  for(int face_index = 0; face_index < render_mesh->GLfaces.size(); ++face_index) {
 //    std::cout << render_mesh->GLfaces[face_index].vn[0].x << " ";
 //    std::cout << render_mesh->GLfaces[face_index].vn[0].y << " ";

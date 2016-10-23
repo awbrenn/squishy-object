@@ -12,16 +12,20 @@
 #define RK4 4
 
 class Solver {
+  private:
+    void addExternalForces();
+    void addStrutForces();
+
+    bool detectCollision(double *time_step_fraction, std::vector::iterator vertex_particle);
+    void eulerIntegration();
+    void RK4Integration();
+
   public:
     SpringyMesh *spring_mesh;
     double dt; // timestep (dt for delta time per step)
 
     Solver (SpringyMesh *spring_mesh, double time_step);
-    void addExternalForces();
-    void addStrutForces();
-    void integrate(void (Solver::*integrator)());
-    void eulerIntegration();
-    void RK4Integration();
+
     void update(unsigned int integrator, Mesh* render_mesh);
 };
 
