@@ -17,14 +17,32 @@ void Solver::addExternalForces() {
 }
 
 void Solver::addStrutForces() {
+  for(auto s = spring_mesh->struts.begin(); s < spring_mesh->struts.end(); ++s) {
+    VertexParticle* vp1 = &spring_mesh->vparticles[s->v1];
+    VertexParticle* vp2 = &spring_mesh->vparticles[s->v2];
 
+    double strut_len = (vp2->pos - vp1->pos).norm();
+    Vector3d strut_unit_vector = (vp2->pos - vp1->pos).normalize();
+
+    // calculate spring force
+    Vector3d spring_force = (s->k * (strut_len - s->l0) * strut_unit_vector);
+    vp1->force = vp1->force + spring_force;
+    vp2->force = vp2->force + (-1.0 * spring_force);
+
+    // calculate damper force
+    Vector3d damper_force = (s->d * ((vp2->vel - vp1->vel) * strut_unit_vector) * strut_unit_vector);
+    vp1->force = vp1->force + damper_force;
+    vp2->force = vp2->force + (-1.0 * damper_force);
+  }
 }
 
 void Solver::eulerIntegration() {
   Vector3d acceleration;
 
   addExternalForces();
-  for (auto vp = spring_mesh->vparticles.begin(); vp < spring_mesh->vparticles.end(); ++vp) {
+  addStrutForces();
+
+  for (auto vp = spring_mesh->vparticles.begin(); vp < spring_mesh->vparticles.end() - 1; ++vp) {
     acceleration = vp->force / vp->mass;
     vp->vel = vp->vel + acceleration * dt;
     vp->pos = vp->pos + vp->vel * dt;
@@ -50,4 +68,28 @@ void Solver::update(unsigned int integrator, Mesh* render_mesh) {
 
   // copy the updated geometry to the mesh we will render
   spring_mesh->convertToRenderMesh(render_mesh);
+
+
+  // Debugging print for vertex normals
+//  for(int face_index = 0; face_index < render_mesh->GLfaces.size(); ++face_index) {
+//    std::cout << render_mesh->GLfaces[face_index].vn[0].x << " ";
+//    std::cout << render_mesh->GLfaces[face_index].vn[0].y << " ";
+//    std::cout << render_mesh->GLfaces[face_index].vn[0].z << " ";
+//
+//    std::cout << std::endl;
+//
+//    std::cout << render_mesh->GLfaces[face_index].vn[1].x << " ";
+//    std::cout << render_mesh->GLfaces[face_index].vn[1].y << " ";
+//    std::cout << render_mesh->GLfaces[face_index].vn[1].z << " ";
+//
+//    std::cout << std::endl;
+//
+//    std::cout << render_mesh->GLfaces[face_index].vn[2].x << " ";
+//    std::cout << render_mesh->GLfaces[face_index].vn[2].y << " ";
+//    std::cout << render_mesh->GLfaces[face_index].vn[2].z << " ";
+//
+//    std::cout << std::endl;
+//  }
+//  std::cout << std::endl;
+//  std::cout << std::endl;
 }

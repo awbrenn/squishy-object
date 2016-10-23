@@ -109,9 +109,9 @@ void initCameraRender() {
 }
 
 void drawMesh() {
-  glUseProgram(springy_object->shader->program);
-//  glPolygonMode(GL_FRONT, GL_LINE);
-//  glPolygonMode(GL_BACK, GL_LINE);
+//  glUseProgram(springy_object->shader->program);
+  glPolygonMode(GL_FRONT, GL_LINE);
+  glPolygonMode(GL_BACK, GL_LINE);
   glBegin(GL_TRIANGLES);
   for (int i = 0; i < springy_object->mesh.GLfaces.size(); ++i) {
     GLface face = springy_object->mesh.GLfaces[i];
@@ -121,8 +121,8 @@ void drawMesh() {
     }
   }
   glEnd();
-//  glPolygonMode(GL_FRONT, GL_FILL);
-//  glPolygonMode(GL_BACK, GL_FILL);
+  glPolygonMode(GL_FRONT, GL_FILL);
+  glPolygonMode(GL_BACK, GL_FILL);
 }
 
 void perspDisplay() {
