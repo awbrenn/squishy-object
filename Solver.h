@@ -16,7 +16,7 @@ class Solver {
     void addExternalForces();
     void addStrutForces();
 
-    bool detectCollision(double *time_step_fraction, std::vector::iterator vertex_particle);
+    bool detectCollision(double *time_step_fraction, Vector3d vp_pos, Vector3d vp_pos_new);
     void eulerIntegration();
     void RK4Integration();
 

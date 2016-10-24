@@ -37,11 +37,17 @@ void Solver::addStrutForces() {
 }
 
 // TODO detect geometry collisions rather than ground plane
-bool Solver::detectCollision(double *time_step_fraction, std::vector::iterator vertex_particle) {
+bool Solver::detectCollision(double *time_step_fraction, Vector3d vp_pos, Vector3d vp_pos_new) {
   bool collision_occurred = false;
+  double ground_plane_location = -8.0;
 
-  if (vertex_particle->pos.y < -2.0) {
+  if (vp_pos.y < ground_plane_location) {
     collision_occurred = true;
+
+    double distance_to_collision = fabs(ground_plane_location - vp_pos.y);
+    double total_distance = fabs(vp_pos_new.y - vp_pos.y);
+
+    *time_step_fraction = distance_to_collision / total_distance;
   }
 
   return collision_occurred;
@@ -51,19 +57,29 @@ bool Solver::detectCollision(double *time_step_fraction, std::vector::iterator v
 void Solver::eulerIntegration() {
   Vector3d acceleration;
   double time_step_fraction;
+  double coefficient_of_restitution = 0.8;
+  double coefficient_of_friction = 0.2;
 
   addExternalForces();
   addStrutForces();
 
 
-  for (auto vp = spring_mesh->vparticles.begin(); vp < spring_mesh->vparticles.end() - 1; ++vp) {
+  for (auto vp = spring_mesh->vparticles.begin(); vp < spring_mesh->vparticles.end(); ++vp) {
     acceleration = vp->force / vp->mass;
 
     Vector3d new_vel = vp->vel + acceleration * dt;
     Vector3d new_pos = vp->pos + vp->vel * dt;
 
-    if (detectCollision(&time_step_fraction, vp)) {
+    if (detectCollision(&time_step_fraction, vp->pos, new_pos)) {
+      Vector3d plane_normal(0.0, 1.0, 0.0);
+      Vector3d collision_vel = vp->vel + (acceleration * (time_step_fraction * dt));
+      Vector3d collision_pos = vp->pos + (vp->vel * (time_step_fraction * dt));
+      Vector3d normal_vel = (collision_vel * plane_normal) * plane_normal;
+      Vector3d tangent_vel = collision_vel - normal_vel;
 
+      new_vel = (-1.0 * coefficient_of_restitution * normal_vel) + ((1.0 - coefficient_of_friction) * tangent_vel);
+      vp->vel = new_vel + (acceleration * ((1.0 - time_step_fraction) * dt));
+      vp->pos = collision_pos + (new_vel * ((1.0 - time_step_fraction) * dt));
     }
     else {
       vp->vel = new_vel;
