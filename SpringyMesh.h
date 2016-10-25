@@ -5,11 +5,16 @@
 #ifndef SQUISHYMESH_SPRINGYMESH_H
 #define SQUISHYMESH_SPRINGYMESH_H
 
+#include <math.h>
 #include <vector>
+#include <algorithm>
+#include <set>
+#include <iterator>
 #include "Strut.h"
 #include "Face.h"
 #include "VertexParticle.h"
 #include "Mesh.h"
+
 
 class SpringyMesh {
   private:
@@ -33,7 +38,22 @@ class SpringyMesh {
     // converts a spring mesh back to a render mesh
     void convertToRenderMesh(Mesh* mesh);
 
-    std::vector<VertexParticle> getVerticesOfFace(std::vector<Face>::iterator face);
+    // get the vertices of a given face
+    std::vector<VertexParticle> getVerticesOfFace(unsigned int face_index);
+
+    // get the vertex indices of a given face
+    std::vector<unsigned int> getVertexIndicesOfFace(unsigned int face_index);
+
+    // calculate the angle between two faces
+
+    // get the vertices not shared by two faces
+    std::vector<unsigned int> getUnsharedVertices(unsigned int face1_index, unsigned int face2_index);
+
+    // calculate the normal of a face
+    Vector3d calculateFaceNormal(unsigned int face_index);
+
+    // calculate angle between faces
+    double calculateAngleBetweenFaces(unsigned int strut_index);
 };
 
 

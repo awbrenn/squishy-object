@@ -12,5 +12,4 @@ class Face {
     Face(unsigned int strut_index1, unsigned int strut_index2, unsigned int strut_index3);
 };
 
-
 #endif //SQUISHYMESH_FACE_H

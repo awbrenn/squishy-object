@@ -34,6 +34,14 @@ void SpringyMesh::convertToSprings(Mesh mesh, double mass) {
     strut_indices[2] = addStrut(f->v2, f->v0, face_index);
     faces.push_back(Face(strut_indices[0], strut_indices[1], strut_indices[2]));
   }
+
+  // calculate angles between faces
+  for (auto s = struts.begin(); s != struts.end(); ++s) {
+    if (s->f1 != UNASSIGNED and s->f2 != UNASSIGNED) {
+      s->angle0 = calculateAngleBetweenFaces(s - struts.begin());
+    }
+  }
+
 }
 
 unsigned int SpringyMesh::addStrut(unsigned int v1, unsigned int v2, unsigned face_index) {
@@ -79,7 +87,7 @@ void SpringyMesh::convertToRenderMesh(Mesh *mesh) {
     std::vector<VertexParticle> face_vertices;
 
     // get face vertices
-    face_vertices = getVerticesOfFace(f);
+    face_vertices = getVerticesOfFace(f - faces.begin());
 
     // apply new vertex positions
     mesh->GLfaces[face_index].v[0].x = (GLfloat) (face_vertices[0].pos.x);
@@ -121,13 +129,114 @@ void SpringyMesh::convertToRenderMesh(Mesh *mesh) {
   }
 }
 
-std::vector<VertexParticle> SpringyMesh::getVerticesOfFace(std::vector<Face>::iterator face) {
+std::vector<VertexParticle> SpringyMesh::getVerticesOfFace(unsigned int face_index) {
+  std::vector<unsigned int> face_vertex_indices;
   std::vector<VertexParticle> face_vertices;
 
-  // grab the three vertices in the face
-  face_vertices.push_back(vparticles[struts[face->strut_indices[0]].v1]);
-  face_vertices.push_back(vparticles[struts[face->strut_indices[0]].v2]);
-  face_vertices.push_back(vparticles[struts[face->strut_indices[1]].v2]);
+  face_vertex_indices = getVertexIndicesOfFace(face_index);
+
+  for (int i = 0; i < 3; ++i) {
+    face_vertices.push_back(vparticles[face_vertex_indices[i]]);
+  }
 
   return face_vertices;
 }
+
+
+std::vector<unsigned int> SpringyMesh::getVertexIndicesOfFace(unsigned int face_index) {
+  std::vector<unsigned int> face_vertex_indices;
+
+  // grab the three vertices in the face
+  face_vertex_indices.push_back(struts[faces[face_index].strut_indices[0]].v1);
+  face_vertex_indices.push_back(struts[faces[face_index].strut_indices[0]].v2);
+
+  // have to check if the vertex of the second strut is the same as the first
+  if (struts[faces[face_index].strut_indices[1]].v2 != struts[faces[face_index].strut_indices[0]].v1 and
+      struts[faces[face_index].strut_indices[1]].v2 != struts[faces[face_index].strut_indices[0]].v2) {
+    face_vertex_indices.push_back(struts[faces[face_index].strut_indices[1]].v2);
+  }
+  else {
+    face_vertex_indices.push_back(struts[faces[face_index].strut_indices[1]].v1);
+  }
+
+  return face_vertex_indices;
+}
+
+std::vector<unsigned int> SpringyMesh::getUnsharedVertices(unsigned int face1_index, unsigned int face2_index) {
+  std::set<unsigned int> face1_vertex_indices;
+  std::vector<unsigned int> face1_vertex_indices_temp;
+  std::set<unsigned int> face2_vertex_indices;
+  std::vector<unsigned int> face2_vertex_indices_temp;
+
+  std::set<unsigned int> face1_unique_vertex;
+  std::set<unsigned int> face2_unique_vertex;
+
+  std::vector<unsigned int> unshared_vertex_indices;
+
+  face1_vertex_indices_temp = getVertexIndicesOfFace(face1_index);
+  face2_vertex_indices_temp = getVertexIndicesOfFace(face2_index);
+
+  face1_vertex_indices.insert(face1_vertex_indices_temp.begin(), face1_vertex_indices_temp.end());
+  face2_vertex_indices.insert(face2_vertex_indices_temp.begin(), face2_vertex_indices_temp.end());
+
+  std::set_difference(face1_vertex_indices.begin(), face1_vertex_indices.end(), face2_vertex_indices.begin(), face2_vertex_indices.end(),
+      std::inserter(face1_unique_vertex, face1_unique_vertex.end()));
+
+  std::set_difference(face2_vertex_indices.begin(), face2_vertex_indices.end(), face1_vertex_indices.begin(), face1_vertex_indices.end(),
+                      std::inserter(face2_unique_vertex, face2_unique_vertex.end()));
+
+  unshared_vertex_indices.push_back(*face1_unique_vertex.begin());
+  unshared_vertex_indices.push_back(*face2_unique_vertex.begin());
+
+  return unshared_vertex_indices;
+}
+
+Vector3d SpringyMesh::calculateFaceNormal(unsigned int face_index) {
+  std::vector<VertexParticle> face_vertices;
+  Vector3d edge1;
+  Vector3d edge2;
+  Vector3d normal;
+
+  face_vertices = getVerticesOfFace(face_index);
+
+  edge1 = face_vertices[1].pos - face_vertices[0].pos;
+  edge2 = face_vertices[2].pos - face_vertices[0].pos;
+
+  normal = (edge1 % edge2).normalize();
+
+  if (normal.x != normal.x) {
+    std::cout << "Danger will robinson" << std::endl;
+  }
+
+  return normal;
+}
+
+double SpringyMesh::calculateAngleBetweenFaces(unsigned int strut_index) {
+  Vector3d hinge; // hinge vector
+  double angle;
+  std::vector<unsigned int> unshared_vertices; // the vertices that are not shared by the two: stored (left, right)
+  Vector3d face_normal_left; // normal of face 1
+  Vector3d face_normal_right; // normal of face 2
+  Strut s = struts[strut_index];
+
+  // get all the vertices needed for calculations
+  VertexParticle* x0;
+  VertexParticle* x1;
+
+  // get the vertices not shared by either face
+  unshared_vertices = getUnsharedVertices((unsigned int) s.f1, (unsigned int) s.f2);
+
+  x0 = &vparticles[s.v1];
+  x1 = &vparticles[s.v2];
+
+  hinge = (x1->pos - x0->pos).normalize();
+
+  face_normal_left = calculateFaceNormal((unsigned int) s.f1);
+  face_normal_right = calculateFaceNormal((unsigned int) s.f2);
+
+  angle = atan2((face_normal_left % face_normal_right) * hinge, face_normal_left * face_normal_right);
+
+  return angle;
+}
+
+
