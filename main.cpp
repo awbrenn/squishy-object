@@ -44,24 +44,24 @@ void drawReferenceGrid() {
   for (double i=-12; i<12; i++) {
     for (double j=-12; j<12; j++) {
       glBegin(GL_LINES);
-      glVertex3f(i, 0, j);
-      glVertex3f(i, 0, j+1);
+      glVertex3f(i, (GLfloat) solver->ground_level, j);
+      glVertex3f(i, (GLfloat) solver->ground_level, j+1);
       glEnd();
       glBegin(GL_LINES);
-      glVertex3f(i, 0, j);
-      glVertex3f(i+1, 0, j);
+      glVertex3f(i, (GLfloat) solver->ground_level, j);
+      glVertex3f(i+1, (GLfloat) solver->ground_level, j);
       glEnd();
 
       if (j == 11){
         glBegin(GL_LINES);
-        glVertex3f(i, 0, j+1);
-        glVertex3f(i+1, 0, j+1);
+        glVertex3f(i, (GLfloat) solver->ground_level, j+1);
+        glVertex3f(i+1, (GLfloat) solver->ground_level, j+1);
         glEnd();
       }
       if (i == 11){
         glBegin(GL_LINES);
-        glVertex3f(i+1, 0, j);
-        glVertex3f(i+1, 0, j+1);
+        glVertex3f(i+1, (GLfloat) solver->ground_level, j);
+        glVertex3f(i+1, (GLfloat) solver->ground_level, j+1);
         glEnd();
       }
     }
@@ -69,12 +69,12 @@ void drawReferenceGrid() {
 
   glLineWidth(2.0f);
   glBegin(GL_LINES);
-  glVertex3f(-12, 0, 0);
-  glVertex3f(12, 0, 0);
+  glVertex3f(-12, (GLfloat) solver->ground_level, 0);
+  glVertex3f(12, (GLfloat) solver->ground_level, 0);
   glEnd();
   glBegin(GL_LINES);
-  glVertex3f(0, 0, -12);
-  glVertex3f(0, 0, 12);
+  glVertex3f(0, (GLfloat) solver->ground_level, -12);
+  glVertex3f(0, (GLfloat) solver->ground_level, 12);
   glEnd();
   glLineWidth(1.0f);
 }

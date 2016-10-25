@@ -1,31 +1,51 @@
 **Author:** Austin Brennan  
-**Date:** 9/19/2016  
+**Date:** 10/24/2016  
 **Course:** [CPSC 8170 - Physically Based Animation (Dr. Donald House)](https://people.cs.clemson.edu/~dhouse/courses/817/)    
 **Institution:** Clemson University  
-**Repository:** https://github.com/awbrenn/velocity-field-with-particles
+**Repository:** https://github.com/awbrenn/squshy-mesh
 
-# Voxel Velocity Field With Particles Solver
-A particle system that is influenced by the velocities of a velocity field rendered in OpenGL.
+# Squishy Mesh
+A mesh that deforms in a springy like fashion rendered in OpenGL.
 
 ## Assignment
-For this assignment, you are to extend the concepts that you developed in your bouncing ball project to a large-scale particle system simulation. Your project should include at least one particle generator, and your particles should be able to at least bounce off of fixed polygonal faces. An easy and very effective extension is to make it possible for the particles to bounce off of spherical obstacles. The particle generator should generate unique particles, with attributes drawn from probability distributions chosen appropriately for each particle attribute. Attributes that should be treated in this way should include at least initial position and velocity, mass, lifespan and color. You can use your imagination to come up with other possibilities.
+Now that you can simulate particles flying freely through space, it 
+is time to link them together so that you can start building geometry. 
+For this project, you are to follow the work of Haumann and Parent in 
+building springy structures from simple behavioral "actors". Particles, 
+which have mass, are connected to each other by massless springy-links, 
+which in turn can be connected to form triangles. The triangles can be 
+connected along common edges to form polyhedral structures. The common 
+edges that the triangles share can have torsional springs associated 
+with them. The springy-links between particles provide spring forces 
+that tend to keep the particles at a specific rest-distance from each 
+other. The torsional springs between triangles provide spring forces 
+that keep the triangles at a specific rest-angle with respect to each 
+other. Both the link and torsional springs should have some damping 
+associated with them so that vibrations tend to die out over time.
+
+Your assignment is to put together some experiments using these ideas 
+to build springy objects that can "live" in a simulated virtual world. 
+Ideas are jello cubes that can be tossed around, flags that can blow in 
+the wind, slinky toys, butterflys, etc.
+
+Finally, once you have done a nice springy object simulation, you may 
+notice that the motion sometimes doesn't look completely realistic, and 
+it may be hard to keep the simulation stable. Both of these 
+characteristics may be due to the fact that you have been using a simple 
+numerical integration algorithm. I would like you to improve your 
+simulation  program by moving to the fourth-order Runga-Kutta 
+integration algorithm, but without changing the geometry or dynamics. 
+Details of this algorithm can be found in the notes, and in the book 
+Numerical Recipes, by Press et al. You should note some real improvement
+in performance, both in terms of stability and quality of motion. 
 
 ##Features
-* FGA file reader for reading in velocity grids
-* Particle emission randomly distributed in a cube
-* Multiple emitter support
-* Multiple sphere collider support
-* Adjustable particle color
-* Velocity grid visualization
+* Obj loader for arbitrary springy mesh
+* Ability to interact with the object
 
-## Un-Implemented
-* Parameter file option for multiple emitters
-* Parameter file option for multiple colliders
-* Particle emission on sphere surfaces
-* Particle emission within a sphere
-* Collision with polygonal planes
-* Improved rendering of particles
-
+## Work In Progress
+* Torsional forces still aren't working correctly
+* Stability overall could be improved
 
 ## Compilation
 ```
@@ -35,18 +55,15 @@ $> make
 
 ## Usage
 ```
-$> ParticleSystem parameters
+$> SquishyMesh parameters
 ```
 
 ## Interaction
 ```
-r or R - Activate render mode
-l or L - Activate line render in render mode
-p or P - Activate point render in render mode
-d or D - Activate debug view of particle simulation
-g   - Toggle grid
-esc - Quit the program
-q   - Quit the program
+w/a/s/d - move the ball around
+g       - Toggle grid
+esc     - Quit the program
+q       - Quit the program
 ```
 
 ## Acknowledgements
