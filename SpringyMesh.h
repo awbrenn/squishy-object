@@ -27,7 +27,8 @@ class SpringyMesh {
     std::vector<VertexParticle> vparticles;
 
     // calculates the spring constants based on time constant parameters
-    void calculateSpringConstants(double spring_constant, double damper_constant);
+    void calculateSpringConstants(double spring_constant, double damper_constant, double torsional_spring_constant,
+                                      double torsional_damper_constant);
 
     // converts a mesh to springs
     void convertToSprings(Mesh mesh, double mass);

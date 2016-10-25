@@ -28,6 +28,9 @@ int HEIGHT = 720;
 Camera *camera;
 SpringyObject *springy_object;
 Solver *solver;
+unsigned int INTEGRATOR;
+Vector3d user_acceleration;
+double user_accel_magnitude;
 
 bool showReferenceGrid = true;
 
@@ -143,7 +146,8 @@ void perspDisplay() {
 }
 
 void stepSimulation() {
-  solver->update(EULER, &springy_object->mesh);
+  solver->update(INTEGRATOR, &springy_object->mesh, user_acceleration);
+  user_acceleration = Vector3d(0.0, 0.0, 0.0);
   glutPostRedisplay();
 }
 
@@ -161,18 +165,34 @@ void motionEventHandler(int x, int y) {
 
 void keyboardEventHandler(unsigned char key, int x, int y) {
   switch (key) {
-    case 'r': case 'R':
-      // render the particles
-      showReferenceGrid = false;
-      initCameraRender();
-      ;
+//    case 'r': case 'R':
+//      // render the particles
+//      showReferenceGrid = false;
+//      initCameraRender();
+//      ;
+//      break;
+//
+//    case 'd': case 'D':
+//      // render the particles
+//      showReferenceGrid = true;
+//      initCameraDebug();
+//      ;
+//      break;
+
+    case 'w': case 'W':
+      user_acceleration = Vector3d(0.0, 0.0, -1.0 * user_accel_magnitude);
       break;
 
-    case 'd': case 'D':
-      // render the particles
-      showReferenceGrid = true;
-      initCameraDebug();
-      ;
+    case 'a':
+      user_acceleration = Vector3d(-1.0 * user_accel_magnitude, 0.0, 0.0);
+      break;
+
+    case 's':
+      user_acceleration = Vector3d(0.0, 0.0, user_accel_magnitude);
+      break;
+
+    case 'd':
+      user_acceleration = Vector3d(user_accel_magnitude, 0.0, 0.0);
       break;
 
     case 'p': case 'P':
@@ -215,9 +235,11 @@ bool readParameters(char *paramfile_name) {
     while (getline(paramfile_stream, line)) {
 
       if (line.compare("SPRINGY OBJECT:") == 0) {
-        double mass, // spring time constant
-               spring_constant, // damper time constant
-                damping_constant; // natural frequency of spring
+        double mass,                       // mass of the object
+               spring_constant,            // spring time constant
+               damping_constant,           // damper time constant
+               torsional_spring_constant,  // spring constant of the torsional springs
+               torsional_damping_constant; // damping constant of the torsional springs
         std::string obj_filename;
         std::string frag_shader_filename;
         std::string vert_shader_filename;
@@ -250,17 +272,28 @@ bool readParameters(char *paramfile_name) {
 
         object_stream >> mass >> spring_constant >> damping_constant;
 
-//        std::cout << "mass: " << mass << " k: " << spring_constant << " d: " << damping_constant << std::endl;
-
-        springy_object = new SpringyObject(obj_filename, frag_shader_filename, vert_shader_filename,
-                                           mass, spring_constant, damping_constant);
-
         // skip a line
         getline(paramfile_stream, line);
+        getline(paramfile_stream, line);
+        getline(paramfile_stream, line);
+
+        object_stream.str(line);
+        object_stream.clear();
+
+        object_stream >> torsional_spring_constant >> torsional_damping_constant;
+
+//        std::cout << "mass: " << mass << " k: " << spring_constant << " d: " << damping_constant << std::endl;
+
+        springy_object = new SpringyObject(obj_filename, frag_shader_filename, vert_shader_filename, mass,
+                                           spring_constant, damping_constant, torsional_spring_constant,
+                                           torsional_damping_constant);
       }
 
       else if (line.compare("SOLVER:") == 0) {
-        double time_step;
+        double time_step,
+               ground_plane,
+               coefficient_of_restitution,
+               coefficient_of_friction;
         // skip a line
         getline(paramfile_stream, line);
 
@@ -268,9 +301,48 @@ bool readParameters(char *paramfile_name) {
         std::stringstream solver_stream(line);
         solver_stream >> time_step;
 
-//        std::cout << time_step << std::endl;
+        // skip a line
+        getline(paramfile_stream, line);
+        getline(paramfile_stream, line);
+        getline(paramfile_stream, line);
 
-        solver = new Solver(&springy_object->spring_mesh, time_step);
+        solver_stream.str(line);
+        solver_stream.clear();
+        std::string integration_type;
+
+        solver_stream >> integration_type;
+        if (integration_type.compare("LEAPFROG") == 0) {
+          INTEGRATOR = LEAPFROG;
+        }
+        else if (integration_type.compare("SIXTH") == 0) {
+          INTEGRATOR = SIXTH;
+        }
+        else {
+          INTEGRATOR = SIXTH;
+        }
+
+        // skip a line
+        getline(paramfile_stream, line);
+        getline(paramfile_stream, line);
+        getline(paramfile_stream, line);
+
+        solver_stream.str(line);
+        solver_stream.clear();
+
+        solver_stream >> ground_plane >> coefficient_of_restitution >> coefficient_of_friction;
+
+        // skip a line
+        getline(paramfile_stream, line);
+        getline(paramfile_stream, line);
+        getline(paramfile_stream, line);
+
+        solver_stream.str(line);
+        solver_stream.clear();
+
+        solver_stream >> user_accel_magnitude;
+
+        solver = new Solver(&springy_object->spring_mesh, time_step, ground_plane,
+                            coefficient_of_restitution, coefficient_of_friction);
       }
     }
   }

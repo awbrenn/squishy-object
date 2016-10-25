@@ -71,12 +71,15 @@ double SpringyMesh::calculateAverageStrutLength() {
   return average_strut_length / ((double) (struts.size()));
 }
 
-void SpringyMesh::calculateSpringConstants(double spring_constant, double damper_constant) {
+void SpringyMesh::calculateSpringConstants(double spring_constant, double damper_constant,
+                                           double torsional_spring_constant, double torsional_damper_constant) {
   double average_strut_length = calculateAverageStrutLength();
 
   for (auto s = struts.begin(); s != struts.end(); ++s) {
     s->k = (s->l0 / average_strut_length) * spring_constant;
     s->d = (s->l0 / average_strut_length) * damper_constant;
+    s->torsional_k = torsional_spring_constant;
+    s->torsional_d = torsional_damper_constant;
   }
 }
 

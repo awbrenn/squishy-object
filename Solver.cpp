@@ -4,9 +4,13 @@
 
 #include "Solver.h"
 
-Solver::Solver(SpringyMesh *Spring_mesh, double time_step) {
+Solver::Solver(SpringyMesh *Spring_mesh, double time_step, double Ground_level, double Coefficient_of_restitution,
+               double Coefficient_of_friction) {
   spring_mesh = Spring_mesh;
   dt = time_step;
+  ground_level = Ground_level;
+  coeff_of_restitution = Coefficient_of_restitution;
+  coeff_of_friction = Coefficient_of_friction;
 }
 
 void Solver::addExternalForces() {
@@ -38,8 +42,7 @@ void Solver::addStrutForces() {
     if (s->f1 != UNASSIGNED and s->f2 != UNASSIGNED) {
       Vector3d hinge; // hinge vector
       double angle;
-      double torsional_spring_constant = 20.0; // TODO put this in settings
-      double torsional_damper_constant = 10.0; // TODO put this in settings
+
       Vector3d torsional_force;
       Vector3d rot_axis_left; // rotation axis of left face
       Vector3d rot_axis_right; // rotation axis of right face
@@ -95,11 +98,11 @@ void Solver::addStrutForces() {
       double rot_speed_right = ((x3->vel - hinge_velocity_right) * face_normal_right) / (rot_axis_right.norm());
 
 //      torsional_force = 0.0;
-      double spring_force_magnitude = torsional_spring_constant * (angle - s->angle0);
-      double damper_force_magnitude = torsional_damper_constant * (rot_speed_left + rot_speed_right);
+      double spring_force_magnitude = s->torsional_k * (angle - s->angle0);
+      double damper_force_magnitude = s->torsional_d * (rot_speed_left + rot_speed_right);
       torsional_force = (spring_force_magnitude - damper_force_magnitude) * hinge;
 
-      std::cout << "sp: " << spring_force_magnitude << "\td: " << damper_force_magnitude << std::endl;
+//      std::cout << "sp: " << spring_force_magnitude << "\td: " << damper_force_magnitude << std::endl;
 
 //      if (torsional_force.norm() > 0) {
 //        std::cout << "breakpoint" << std::endl;
@@ -132,18 +135,24 @@ void Solver::addStrutForces() {
       x3->force = x3->force + f3;
     }
   }
-  std::cout << std::endl;
+//  std::cout << std::endl;
+}
+
+
+void Solver::addUserForces() {
+  for (auto vp = spring_mesh->vparticles.begin(); vp < spring_mesh->vparticles.end(); ++vp) {
+    vp->force = vp->force + (user_acceleration * vp->mass);
+  }
 }
 
 // TODO detect geometry collisions rather than ground plane
 bool Solver::detectCollision(double *time_step_fraction, Vector3d vp_pos, Vector3d vp_pos_new) {
   bool collision_occurred = false;
-  double ground_plane_location = -0.6;
 
-  if (vp_pos.y < ground_plane_location) {
+  if (vp_pos.y < ground_level) {
     collision_occurred = true;
 
-    double distance_to_collision = fabs(ground_plane_location - vp_pos.y);
+    double distance_to_collision = fabs(ground_level - vp_pos.y);
     double total_distance = fabs(vp_pos_new.y - vp_pos.y);
 
     *time_step_fraction = distance_to_collision / total_distance;
@@ -153,58 +162,73 @@ bool Solver::detectCollision(double *time_step_fraction, Vector3d vp_pos, Vector
 }
 
 
-void Solver::eulerIntegration() {
+void Solver::leapFrog(double time_step) {
   Vector3d acceleration;
   double time_step_fraction;
-  double coefficient_of_restitution = 0.8;
-  double coefficient_of_friction = 0.2;
 
   addExternalForces();
   addStrutForces();
-
+  addUserForces();
 
   for (auto vp = spring_mesh->vparticles.begin(); vp < spring_mesh->vparticles.end(); ++vp) {
     acceleration = vp->force / vp->mass;
 
-    Vector3d new_vel = vp->vel + acceleration * dt;
-    Vector3d new_pos = vp->pos + vp->vel * dt;
+//    Vector3d new_vel = vp->vel + acceleration * dt;
+    Vector3d new_vel;
+    Vector3d new_pos = vp->pos + (vp->vel * dt);
 
     if (detectCollision(&time_step_fraction, vp->pos, new_pos)) {
+      acceleration = vp->force / vp->mass;
+
       Vector3d plane_normal(0.0, 1.0, 0.0);
       Vector3d collision_vel = vp->vel + (acceleration * (time_step_fraction * dt));
       Vector3d collision_pos = vp->pos + (vp->vel * (time_step_fraction * dt));
       Vector3d normal_vel = (collision_vel * plane_normal) * plane_normal;
       Vector3d tangent_vel = collision_vel - normal_vel;
 
-      new_vel = (-1.0 * coefficient_of_restitution * normal_vel) + ((1.0 - coefficient_of_friction) * tangent_vel);
+      new_vel = (-1.0 * coeff_of_restitution * normal_vel) + ((1.0 - coeff_of_friction) * tangent_vel);
       vp->vel = new_vel + (acceleration * ((1.0 - time_step_fraction) * dt));
       vp->pos = collision_pos + (new_vel * ((1.0 - time_step_fraction) * dt));
     }
     else {
+      new_pos = vp->pos + (vp->vel * dt * 0.5);
+      acceleration = vp->force / vp->mass;
+
+      new_vel = vp->vel + (acceleration * dt);
+      new_pos = new_pos + (vp->vel * dt * 0.5);
+
       vp->vel = new_vel;
       vp->pos = new_pos;
     }
-    if (vp->vel.x != vp->vel.x) {
-      std::cout << "Danger will robinson" << std::endl;
-    }
+//    if (vp->vel.x != vp->vel.x) {
+//      std::cout << "Danger will robinson" << std::endl;
+//    }
   }
 }
 
-void Solver::RK4Integration() {
-  std::cout << "RK4" << std::endl;
+void Solver::sixth() {
+  double a = 0.414490771794375737142354062860761495711774604016707133323;
+  double b = 1 - 4*a;
 
+  leapFrog(a*dt);
+  leapFrog(a*dt);
+  leapFrog(b*dt);
+  leapFrog(a*dt);
+  leapFrog(a*dt);
 }
 
-void Solver::update(unsigned int integrator, Mesh* render_mesh) {
+void Solver::update(unsigned int integrator, Mesh *render_mesh, Vector3d User_acceleration) {
+  user_acceleration = User_acceleration;
+
   switch(integrator) {
-    case EULER:
-      eulerIntegration();
+    case LEAPFROG:
+      leapFrog(dt);
       break;
-    case RK4:
-      RK4Integration();
+    case SIXTH:
+      sixth();
       break;
     default:
-      RK4Integration();
+      sixth();
   }
 
   // copy the updated geometry to the mesh we will render
