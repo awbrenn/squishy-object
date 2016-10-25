@@ -1,6 +1,0 @@
-OBJECT:
-        obj path and filename
-        /Users/AustinBrennan/Documents/workspace/physanim/squishy-object/box.obj
-
-        fragment shader     vertex shader
-        /Users/AustinBrennan/Documents/workspace/physanim/squishy-object/shader.frag       /Users/AustinBrennan/Documents/workspace/physanim/squishy-object/shader.vert
