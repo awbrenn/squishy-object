@@ -1,9 +1,9 @@
 SPRINGY OBJECT:
         obj path and filename
-        /home/awbrenn/Documents/workspace/physanim/4/box.obj
+                   box.obj
 
         fragment shader                                                 vertex shader
-        /home/awbrenn/Documents/workspace/physanim/4/shader.frag       /home/awbrenn/Documents/workspace/physanim/4/shader.vert
+            shader.frag                                                   shader.vert
 
         mass (m) [kg], spring constant (k) [N/m], damping constant (d) [(N*s)/m]
                   1.0                       50.0                             1.0
