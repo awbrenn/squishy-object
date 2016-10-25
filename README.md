@@ -49,6 +49,7 @@ in performance, both in terms of stability and quality of motion.
 
 ## Compilation
 ```
+$> cmake CMakeLists.txt
 $> make
 ```
 
