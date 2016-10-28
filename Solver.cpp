@@ -173,29 +173,26 @@ void Solver::leapFrog(double time_step) {
   for (auto vp = spring_mesh->vparticles.begin(); vp < spring_mesh->vparticles.end(); ++vp) {
     acceleration = vp->force / vp->mass;
 
-//    Vector3d new_vel = vp->vel + acceleration * dt;
+//    Vector3d new_vel = vp->vel + acceleration * time_step;
     Vector3d new_vel;
-    Vector3d new_pos = vp->pos + (vp->vel * dt);
+    Vector3d new_pos = vp->pos + (vp->vel * time_step);
 
     if (detectCollision(&time_step_fraction, vp->pos, new_pos)) {
-      acceleration = vp->force / vp->mass;
-
       Vector3d plane_normal(0.0, 1.0, 0.0);
-      Vector3d collision_vel = vp->vel + (acceleration * (time_step_fraction * dt));
-      Vector3d collision_pos = vp->pos + (vp->vel * (time_step_fraction * dt));
+      Vector3d collision_vel = vp->vel + (acceleration * (time_step_fraction * time_step));
+      Vector3d collision_pos = vp->pos + (vp->vel * (time_step_fraction * time_step));
       Vector3d normal_vel = (collision_vel * plane_normal) * plane_normal;
       Vector3d tangent_vel = collision_vel - normal_vel;
 
       new_vel = (-1.0 * coeff_of_restitution * normal_vel) + ((1.0 - coeff_of_friction) * tangent_vel);
-      vp->vel = new_vel + (acceleration * ((1.0 - time_step_fraction) * dt));
-      vp->pos = collision_pos + (new_vel * ((1.0 - time_step_fraction) * dt));
+      vp->vel = new_vel + (acceleration * ((1.0 - time_step_fraction) * time_step));
+      vp->pos = collision_pos + (new_vel * ((1.0 - time_step_fraction) * time_step));
     }
     else {
-      new_pos = vp->pos + (vp->vel * dt * 0.5);
-      acceleration = vp->force / vp->mass;
+      new_pos = vp->pos + (vp->vel * time_step * 0.5);
 
-      new_vel = vp->vel + (acceleration * dt);
-      new_pos = new_pos + (vp->vel * dt * 0.5);
+      new_vel = vp->vel + (acceleration * time_step);
+      new_pos = new_pos + (vp->vel * time_step * 0.5);
 
       vp->vel = new_vel;
       vp->pos = new_pos;

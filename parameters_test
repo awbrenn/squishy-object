@@ -1,0 +1,25 @@
+SPRINGY OBJECT:
+        obj path and filename
+        /home/awbrenn/Documents/workspace/physanim/4/pyramid.obj
+
+        fragment shader                                                 vertex shader
+            /home/awbrenn/Documents/workspace/physanim/4/shader.frag    /home/awbrenn/Documents/workspace/physanim/4/shader.vert
+
+        mass (m) [kg], spring constant (k) [N/m], damping constant (d) [(N*s)/m]
+                  1.0                      50.0                             3.0
+
+        torsional spring constant (k) [N/m], torsional damping constant(d) [(N*s)/m]
+                                        1.0                                      0.0
+
+SOLVER:
+        timestep (change in time between each simulation step)
+           0.004
+
+        integrator (choose from LEAPFROG and SIXTH)
+            SIXTH
+
+        ground level, coefficient of restitution, coefficient of friction
+                -5.0                        0.8                       0.2
+
+        magnitude of user acceleration
+                                  13.0
